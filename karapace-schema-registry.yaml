@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karapace-schema-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: karapace-schema-registry
+  template:
+    metadata:
+      labels:
+        app: karapace-schema-registry
+    spec:
+      containers:
+        - name: karapace
+          image: ghcr.io/aiven-open/karapace:develop
+          command:
+            - python3
+            - -m
+            - karapace
+          ports:
+            - containerPort: 8081
+          env:
+            - name: KARAPACE_BOOTSTRAP_URI
+              value: <your kafka-cluster-kafka-bootstrap:9092>
+            - name: KARAPACE_PORT
+              value: "8081"
+            - name: KARAPACE_HOST
+              value: 0.0.0.0
+            - name: KARAPACE_CLIENT_ID
+              value: karapace
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: karapace-schema-registry
+spec:
+  ports:
+    - port: 8081
+  selector:
+    app: karapace-schema-registry
+  type: ClusterIP
